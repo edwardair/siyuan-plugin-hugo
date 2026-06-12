@@ -37,14 +37,17 @@ export default class SiyuanHugoPlugin extends Plugin {
 
         this.addCommand({
             langKey: "exportCurrentDocCommand",
+            hotkey: "⌥⇧⌘E",
             callback: () => this.runExport(false),
         });
         this.addCommand({
             langKey: "exportAndPushCommand",
+            hotkey: "⌥⇧⌘P",
             callback: () => this.runExport(true),
         });
         this.addCommand({
             langKey: "openPluginSettingsCommand",
+            hotkey: "⌥⇧⌘,",
             callback: () => this.openPluginSettings(),
         });
     }

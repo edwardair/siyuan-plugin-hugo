@@ -61,10 +61,7 @@ export async function exportDocumentToHugo(docId: string, settings: HugoPluginSe
         throw new Error(formatMessage(messages.notGitRepo, { path: resolvedRepoPath }));
     }
 
-    const sectionDir = resolveContentDir(
-        mergedSettings.contentBaseDir,
-        attrs[DOC_ATTR_KEYS.section],
-    );
+    let sectionDir = dirname(exported.hPath)
     const title = cleanTitle(docBlock.content || lastPathSegment(exported.hPath) || docId);
     const targetDir = resolveTargetDir({
         repoPath: resolvedRepoPath,
@@ -98,7 +95,7 @@ export async function exportDocumentToHugo(docId: string, settings: HugoPluginSe
         siyuanId: docId,
         siyuanPath: exported.hPath || docBlock.hpath || "",
     });
-    const indexPath = node.path.join(targetDir, "index.md");
+    const indexPath = node.path.join(targetDir, `${title || docId}.md`);
     node.fs.writeFileSync(indexPath, `${frontMatter}${markdown}`, "utf8");
 
     const shouldPush = options?.push ?? mergedSettings.autoPushAfterExport;
@@ -143,7 +140,7 @@ function resolveTargetDir(args: {
     messages: ExportMessages;
 }) {
     const node = getNodeRuntime();
-    const sectionPath = node.path.resolve(args.repoPath, args.sectionDir);
+    const sectionPath = node.path.resolve(args.repoPath, args.sectionDir.replace(/^[\/\\]+/, ''));
     ensureInsideRepo(args.repoPath, sectionPath, args.messages);
     node.fs.mkdirSync(sectionPath, { recursive: true });
 
@@ -152,8 +149,7 @@ function resolveTargetDir(args: {
         return existingDir;
     }
 
-    const folderName = sanitizeFileName(args.title) || args.docId;
-    const targetDir = node.path.resolve(sectionPath, folderName);
+    const targetDir = sectionPath;
     ensureInsideRepo(args.repoPath, targetDir, args.messages);
     return targetDir;
 }
@@ -452,6 +448,20 @@ function toIsoDate(value?: string) {
 
 function lastPathSegment(hPath: string) {
     return hPath.split("/").filter(Boolean).pop() || "";
+}
+
+function dirname(hPath: string) {
+    // 1. 统一斜杠
+    const normalized = hPath.replace(/\\/g, '/');
+    // 2. 按斜杠分割成数组
+    const parts = normalized.split('/');
+    // 3. 移除最后一部分
+    parts.pop();
+    // 4. 重新拼接
+    if (parts.length === 0) {
+        return '';
+    }
+    return parts.join('/') || '';
 }
 
 function cleanTitle(value: string) {
