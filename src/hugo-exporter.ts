@@ -84,19 +84,8 @@ export async function exportDocumentToHugo(docId: string, settings: HugoPluginSe
         ? stripDefaultImageAltText(rewrittenMarkdown)
         : rewrittenMarkdown;
     const markdown = normalizeMarkdownForHugo(imageAltTextMarkdown);
-    const frontMatter = buildTomlFrontMatter({
-        title,
-        slug,
-        draft,
-        createdAt,
-        updatedAt,
-        category: options?.category ?? mergedSettings.defaultCategory,
-        tags,
-        siyuanId: docId,
-        siyuanPath: exported.hPath || docBlock.hpath || "",
-    });
     const indexPath = node.path.join(targetDir, `${title || docId}.md`);
-    node.fs.writeFileSync(indexPath, `${frontMatter}${markdown}`, "utf8");
+    node.fs.writeFileSync(indexPath, `${markdown}`, "utf8");
 
     const shouldPush = options?.push ?? mergedSettings.autoPushAfterExport;
     const pushed = shouldPush
